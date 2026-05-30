@@ -77,18 +77,14 @@
 
   /* ── PAGES ── */
   .page {
-    display: none;
-    padding: calc(var(--safe-top) + 1rem) 1rem calc(80px + var(--safe-bot)) 1rem;
+    display: none !important;
+    padding: 1rem 1rem 100px 1rem;
     max-width: 900px;
     margin: 0 auto;
-    min-height: 100vh;
-    -webkit-overflow-scrolling: touch;
   }
   .page.active {
-    display: block;
-    animation: fadeIn 0.2s ease both;
+    display: block !important;
   }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ── TYPOGRAPHY ── */
   .label {
@@ -947,10 +943,10 @@
     if (kpiReg && done > 0) kpiReg.innerHTML = Math.round(done/3*100) + ' <span class="unit">%</span>';
   }
 
-  /* ─── PWA SERVICE WORKER ─── */
+  /* ─── DÉSACTIVER ET NETTOYER LES SERVICE WORKERS ─── */
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
     });
   }
 
