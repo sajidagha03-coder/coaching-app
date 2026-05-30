@@ -82,9 +82,12 @@
     max-width: 900px;
     margin: 0 auto;
     min-height: 100vh;
-    animation: fadeIn 0.2s ease;
+    -webkit-overflow-scrolling: touch;
   }
-  .page.active { display: block; }
+  .page.active {
+    display: block;
+    animation: fadeIn 0.2s ease both;
+  }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ── TYPOGRAPHY ── */
@@ -812,11 +815,17 @@
 <script>
   /* ─── NAVIGATION ─── */
   function showPage(name) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.remove('active');
+      p.style.display = 'none';
+    });
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
+    const target = document.getElementById('page-' + name);
+    target.style.display = 'block';
+    target.classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
   }
 
   /* ─── DÉBRIEF ACCORDION ─── */
