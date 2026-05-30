@@ -77,14 +77,18 @@
 
   /* ── PAGES ── */
   .page {
-    display: none !important;
-    padding: 1rem 1rem 100px 1rem;
+    display: none;
+    padding: calc(var(--safe-top) + 1rem) 1rem calc(80px + var(--safe-bot)) 1rem;
     max-width: 900px;
     margin: 0 auto;
+    min-height: 100vh;
+    -webkit-overflow-scrolling: touch;
   }
   .page.active {
-    display: block !important;
+    display: block;
+    animation: fadeIn 0.2s ease both;
   }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ── TYPOGRAPHY ── */
   .label {
@@ -794,15 +798,15 @@
 
 <!-- TAB BAR -->
 <nav class="tab-bar">
-  <button class="tab-btn active" id="tab-dashboard">
+  <button class="tab-btn active" id="tab-dashboard" onclick="showPage('dashboard')">
     <span class="tab-icon">📊</span>
     <span>Dashboard</span>
   </button>
-  <button class="tab-btn" id="tab-programme">
+  <button class="tab-btn" id="tab-programme" onclick="showPage('programme')">
     <span class="tab-icon">📅</span>
     <span>Programme</span>
   </button>
-  <button class="tab-btn" id="tab-debrief">
+  <button class="tab-btn" id="tab-debrief" onclick="showPage('debrief')">
     <span class="tab-icon">📋</span>
     <span>Débrief</span>
   </button>
@@ -821,22 +825,8 @@
     target.classList.add('active');
     document.getElementById('tab-' + name).classList.add('active');
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
   }
-
-  /* ─── TAB LISTENERS (touch + click) ─── */
-  document.addEventListener('DOMContentLoaded', () => {
-    [['tab-dashboard','dashboard'],['tab-programme','programme'],['tab-debrief','debrief']].forEach(([id, page]) => {
-      const btn = document.getElementById(id);
-      btn.addEventListener('touchend', function(e) {
-        e.preventDefault();
-        showPage(page);
-      }, { passive: false });
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        showPage(page);
-      });
-    });
-  });
 
   /* ─── DÉBRIEF ACCORDION ─── */
   function toggleDebrief(id) {
@@ -957,10 +947,10 @@
     if (kpiReg && done > 0) kpiReg.innerHTML = Math.round(done/3*100) + ' <span class="unit">%</span>';
   }
 
-  /* ─── DÉSACTIVER ET NETTOYER LES SERVICE WORKERS ─── */
+  /* ─── PWA SERVICE WORKER ─── */
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-      regs.forEach(reg => reg.unregister());
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
   }
 
