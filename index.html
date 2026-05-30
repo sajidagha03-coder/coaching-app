@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coaching">
+<meta name="theme-color" content="#0D0D0D">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Coaching Sportif — 10km/45'</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0D0D0D;
+    --bg2:      #161616;
+    --bg3:      #202020;
+    --bg4:      #2A2A2A;
+    --border:   rgba(255,255,255,0.07);
+    --text:     #EDEBE6;
+    --text2:    #7A7A7A;
+    --text3:    #444;
+    --green:    #2ECC8E;
+    --green-d:  rgba(46,204,142,0.10);
+    --purple:   #9B8DF8;
+    --purple-d: rgba(155,141,248,0.10);
+    --amber:    #F5A623;
+    --amber-d:  rgba(245,166,35,0.10);
+    --rose:     #F06292;
+    --rose-d:   rgba(240,98,146,0.10);
+    --blue:     #5BC4F5;
+    --blue-d:   rgba(91,196,245,0.10);
+    --r:        12px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV TABS (bottom bar iOS style) ── */
+  .tab-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 0.5px solid var(--border);
+    display: flex;
+    padding-bottom: var(--safe-bot);
+    z-index: 100;
+  }
+  .tab-btn {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    padding: 10px 0 8px;
+    background: none; border: none;
+    color: var(--text3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px; cursor: pointer;
+    transition: color 0.15s;
+  }
+  .tab-btn .tab-icon { font-size: 20px; }
+  .tab-btn.active { color: var(--purple); }
+  .tab-btn.active .tab-icon { filter: none; }
+
+  /* ── PAGES ── */
+  .page {
+    display: none;
+    padding: calc(var(--safe-top) + 1rem) 1rem calc(80px + var(--safe-bot)) 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+    min-height: 100vh;
+    animation: fadeIn 0.2s ease;
+  }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── TYPOGRAPHY ── */
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text3);
+  }
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text3);
+    margin: 1.4rem 0 0.7rem;
+  }
+
+  /* ── PILLS ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px;
+  }
+  .pill-purple { background: var(--purple-d); color: var(--purple); border: 0.5px solid rgba(155,141,248,0.2); }
+  .pill-green  { background: var(--green-d);  color: var(--green);  border: 0.5px solid rgba(46,204,142,0.2); }
+  .pill-amber  { background: var(--amber-d);  color: var(--amber);  border: 0.5px solid rgba(245,166,35,0.2); }
+  .pill-blue   { background: var(--blue-d);   color: var(--blue);   border: 0.5px solid rgba(91,196,245,0.2); }
+  .pill-rose   { background: var(--rose-d);   color: var(--rose);   border: 0.5px solid rgba(240,98,146,0.2); }
+
+  /* ══════════════════════════════════════
+     PAGE 1 — DASHBOARD
+  ══════════════════════════════════════ */
+  .page-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .page-header .meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* Objectif banner */
+  .objectif-banner {
+    background: var(--blue-d);
+    border: 0.5px solid rgba(91,196,245,0.2);
+    border-radius: var(--r);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 600px) { .objectif-banner { grid-template-columns: repeat(4,1fr); } }
+  .obj-item .obj-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(91,196,245,0.6); margin-bottom:3px; }
+  .obj-item .obj-val { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; color:var(--blue); line-height:1; }
+  .obj-item .obj-val .obj-sub { font-size:11px; font-weight:400; color:var(--text2); margin-left:2px; }
+  .obj-item .obj-note { font-size:10px; color:var(--text3); margin-top:3px; }
+
+  /* Roadmap */
+  .roadmap {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px; margin-bottom: 1rem;
+  }
+  @media (min-width: 600px) { .roadmap { grid-template-columns: repeat(3,1fr); } }
+  .roadmap-phase {
+    border-radius: 10px; padding: 0.65rem 0.85rem;
+    border: 0.5px solid;
+  }
+  .roadmap-phase.p1 { background: var(--blue-d);   border-color: rgba(91,196,245,0.2); }
+  .roadmap-phase.p2 { background: var(--green-d);  border-color: rgba(46,204,142,0.2); }
+  .roadmap-phase.p3 { background: var(--amber-d);  border-color: rgba(245,166,35,0.2); }
+  .phase-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; margin-bottom:3px; }
+  .p1 .phase-lbl { color:var(--blue); }
+  .p2 .phase-lbl { color:var(--green); }
+  .p3 .phase-lbl { color:var(--amber); }
+  .phase-name { font-size:12px; font-weight:500; color:var(--text); margin-bottom:2px; }
+  .phase-desc { font-size:11px; color:var(--text2); }
+  .phase-obj  { font-size:10px; font-family:'DM Mono',monospace; color:var(--text3); margin-top:4px; }
+
+  /* Week strip */
+  .week-strip {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    gap: 5px; margin-bottom: 4px;
+  }
+  .day-cell {
+    aspect-ratio: 1;
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px; font-size: 8px; color: var(--text3);
+  }
+  .day-cell .emoji { font-size: 13px; }
+  .day-cell.muscle { background: var(--purple-d); border-color: rgba(155,141,248,0.25); color: var(--purple); }
+  .day-cell.cardio { background: var(--green-d);  border-color: rgba(46,204,142,0.25);  color: var(--green); }
+  .week-legend { font-size:10px; color:var(--text3); font-family:'DM Mono',monospace; margin-bottom:1rem; }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 8px; margin-bottom: 1rem;
+  }
+  @media (min-width: 600px) { .kpi-grid { grid-template-columns: repeat(5,1fr); } }
+  .kpi-card {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r); padding: 0.8rem 0.9rem;
+  }
+  .kpi-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.07em; text-transform:uppercase; color:var(--text3); margin-bottom:5px; }
+  .kpi-val { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; line-height:1; }
+  .kpi-val .unit { font-size:11px; font-weight:400; color:var(--text2); margin-left:2px; }
+  .kpi-sub { font-size:10px; color:var(--text3); margin-top:4px; }
+
+  /* Piliers */
+  .piliers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .pilier-card {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r); padding: 0.7rem 0.9rem;
+  }
+  .pilier-card.full { grid-column: 1 / -1; }
+  .pilier-header { display:flex; justify-content:space-between; margin-bottom:7px; }
+  .pilier-name { font-size:12px; color:var(--text); }
+  .pilier-pct { font-family:'DM Mono',monospace; font-size:11px; }
+  .bar-bg { height:4px; background:var(--bg4); border-radius:99px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:99px; width:0%; transition:width 1.2s ease; }
+
+  /* Test reference */
+  .ref-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 6px; margin-bottom: 1rem;
+  }
+  @media (min-width: 500px) { .ref-grid { grid-template-columns: repeat(6,1fr); } }
+  .ref-card {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r); padding: 0.6rem 0.75rem;
+    position: relative; overflow: hidden;
+  }
+  .ref-card::after { content:''; position:absolute; top:0;left:0;right:0; height:2px; }
+  .ref-card.great::after { background: var(--purple); }
+  .ref-card.good::after  { background: var(--green); }
+  .ref-exo   { font-size:10px; color:var(--text2); margin-bottom:3px; }
+  .ref-score { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .ref-score .u { font-size:9px; font-weight:400; color:var(--text3); }
+  .ref-lvl { font-size:9px; font-family:'DM Mono',monospace; margin-top:3px; display:inline-block; padding:1px 5px; border-radius:99px; }
+  .great .ref-lvl { background:var(--purple-d); color:var(--purple); }
+  .good  .ref-lvl { background:var(--green-d);  color:var(--green);  }
+
+  /* ══════════════════════════════════════
+     PAGE 2 — PROGRAMME
+  ══════════════════════════════════════ */
+  .plan-card {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r); margin-bottom: 10px; overflow: hidden;
+  }
+  .plan-head { padding: 0.85rem 1rem 0.75rem; }
+  .plan-title-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:0.65rem; }
+  .plan-day-lbl { font-family:'DM Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:0.07em; text-transform:uppercase; }
+  .plan-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+  .exo-list { display:flex; flex-direction:column; }
+  .exo-row {
+    display:grid; grid-template-columns:52px 1fr auto;
+    gap:6px; align-items:baseline;
+    padding:4px 0; border-bottom:0.5px solid var(--border);
+    font-size:12px;
+  }
+  .exo-row:last-child { border-bottom:none; }
+  .exo-sets { font-family:'DM Mono',monospace; font-size:10px; color:var(--purple); }
+  .exo-name { color:var(--text); }
+  .exo-note { font-size:10px; color:var(--text3); text-align:right; }
+  .cardio-split { display:flex; border-top:0.5px solid var(--border); }
+  .cardio-col { flex:1; padding:0.6rem 0.85rem; }
+  .cardio-col:first-child { border-right:0.5px solid var(--border); }
+  .cardio-col-lbl { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:3px; }
+  .cardio-col.run  .cardio-col-lbl { color:var(--green); }
+  .cardio-col.walk .cardio-col-lbl { color:var(--amber); }
+  .cardio-col-val { font-size:12px; color:var(--text); }
+  .plan-note { font-size:11px; color:var(--text2); padding:0.5rem 1rem 0.65rem; border-top:0.5px solid var(--border); font-style:italic; }
+
+  /* ══════════════════════════════════════
+     PAGE 3 — DÉBRIEF
+  ══════════════════════════════════════ */
+  .debrief-session {
+    background: var(--bg2); border: 0.5px solid var(--border);
+    border-radius: var(--r); margin-bottom: 8px; overflow: hidden;
+  }
+  .debrief-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.75rem 1rem; cursor:pointer; user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .debrief-head:active { background: var(--bg3); }
+  .debrief-left { display:flex; align-items:center; gap:10px; }
+  .status-dot {
+    width:9px; height:9px; border-radius:50%; flex-shrink:0;
+    background:var(--bg4); border:0.5px solid var(--border);
+    transition: background 0.3s;
+  }
+  .status-dot.done    { background:var(--green);  border-color:var(--green); }
+  .status-dot.partial { background:var(--amber);  border-color:var(--amber); }
+  .debrief-date { font-family:'DM Mono',monospace; font-size:10px; color:var(--text2); }
+  .debrief-name { font-size:14px; font-weight:500; color:var(--text); }
+  .debrief-body { border-top:0.5px solid var(--border); padding:0.9rem 1rem; }
+  .debrief-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .debrief-field label {
+    font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.07em;
+    text-transform:uppercase; color:var(--text3); display:block; margin-bottom:5px;
+  }
+  .debrief-field input, .debrief-field textarea, .debrief-field select {
+    width:100%; background:var(--bg3); border:0.5px solid var(--border);
+    border-radius:8px; color:var(--text);
+    font-family:'DM Sans',sans-serif; font-size:14px;
+    padding:8px 10px; outline:none; resize:none;
+    -webkit-appearance: none;
+  }
+  .debrief-field input:focus, .debrief-field textarea:focus, .debrief-field select:focus {
+    border-color:var(--purple);
+  }
+  .debrief-field.full { grid-column:1/-1; }
+  .rpe-row { display:flex; gap:5px; flex-wrap:wrap; }
+  .rpe-btn {
+    width:32px; height:32px; border-radius:8px;
+    background:var(--bg3); border:0.5px solid var(--border);
+    color:var(--text2); font-family:'DM Mono',monospace; font-size:12px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rpe-btn.active { background:var(--purple); color:#fff; border-color:var(--purple); }
+  .save-btn {
+    width:100%; margin-top:10px;
+    background:var(--purple); color:#fff;
+    border:none; border-radius:10px;
+    padding:13px; font-family:'Syne',sans-serif;
+    font-size:14px; font-weight:600; cursor:pointer;
+    transition:opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .save-btn:active { opacity:0.8; }
+
+  /* ══════════════════════════════════════
+     TOAST
+  ══════════════════════════════════════ */
+  .toast {
+    position:fixed; bottom:calc(80px + var(--safe-bot) + 12px);
+    left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--green); color:#0D0D0D;
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:600;
+    padding:10px 20px; border-radius:99px;
+    opacity:0; transition:all 0.3s ease;
+    pointer-events:none; white-space:nowrap; z-index:200;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── FOOTER ── */
+  .dash-footer {
+    text-align:center; font-family:'DM Mono',monospace;
+    font-size:10px; color:var(--text3); margin-top:1.5rem; padding-bottom:0.5rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     PAGE 1 — DASHBOARD
+══════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+
+  <div class="page-header">
+    <div>
+      <h1>Coaching sportif</h1>
+      <div class="meta">Muscu : Lun + Jeu &nbsp;·&nbsp; Cardio : Sam ou Dim</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;">
+      <span class="pill pill-purple">Phase 1</span>
+      <span class="pill pill-green">S1</span>
+      <span class="pill pill-blue">🎯 10km/45'</span>
+    </div>
+  </div>
+
+  <!-- OBJECTIF -->
+  <div class="objectif-banner">
+    <div class="obj-item">
+      <div class="obj-lbl">Objectif</div>
+      <div class="obj-val">10 km <span class="obj-sub">en 45'</span></div>
+      <div class="obj-note">Allure cible : 4'30"/km</div>
+    </div>
+    <div class="obj-item">
+      <div class="obj-lbl">Allure actuelle</div>
+      <div class="obj-val">~5'30" <span class="obj-sub">/km</span></div>
+      <div class="obj-note">À affiner après S1</div>
+    </div>
+    <div class="obj-item">
+      <div class="obj-lbl">Gap</div>
+      <div class="obj-val" style="color:var(--amber)">~1'00" <span class="obj-sub">/km</span></div>
+      <div class="obj-note">Sur 12 semaines</div>
+    </div>
+    <div class="obj-item">
+      <div class="obj-lbl">Horizon</div>
+      <div class="obj-val" style="color:var(--text)">S12 <span class="obj-sub">fin août</span></div>
+      <div class="obj-note">Retest /4 sem.</div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section-title">Feuille de route — 12 semaines</div>
+  <div class="roadmap">
+    <div class="roadmap-phase p1">
+      <div class="phase-lbl">Phase 1 · S1–S4</div>
+      <div class="phase-name">Fondations endurance</div>
+      <div class="phase-desc">Sorties 3–5 km · Allure libre · Construire le volume</div>
+      <div class="phase-obj">✓ Objectif S4 : 5 km continu</div>
+    </div>
+    <div class="roadmap-phase p2">
+      <div class="phase-lbl">Phase 2 · S5–S8</div>
+      <div class="phase-name">Allure & seuil</div>
+      <div class="phase-desc">Fractionné 1'/1' · Sorties 6–8 km · 5'00"/km</div>
+      <div class="phase-obj">✓ Objectif S8 : 8 km continu</div>
+    </div>
+    <div class="roadmap-phase p3">
+      <div class="phase-lbl">Phase 3 · S9–S12</div>
+      <div class="phase-name">Vitesse & objectif</div>
+      <div class="phase-desc">Sorties 8–10 km · Allure cible 4'30"/km</div>
+      <div class="phase-obj">✓ Objectif S12 : 10 km / 45'</div>
+    </div>
+  </div>
+
+  <!-- PLANNING -->
+  <div class="section-title">Planning semaine 1</div>
+  <div class="week-strip">
+    <div class="day-cell muscle"><span class="emoji">💪</span><span>Lun</span></div>
+    <div class="day-cell"><span class="emoji">·</span><span>Mar</span></div>
+    <div class="day-cell"><span class="emoji">·</span><span>Mer</span></div>
+    <div class="day-cell muscle"><span class="emoji">💪</span><span>Jeu</span></div>
+    <div class="day-cell"><span class="emoji">·</span><span>Ven</span></div>
+    <div class="day-cell cardio" style="border-style:dashed;opacity:0.8;"><span class="emoji">🏃</span><span>Sam?</span></div>
+    <div class="day-cell cardio" style="border-style:dashed;opacity:0.8;"><span class="emoji">🏃</span><span>Dim?</span></div>
+  </div>
+  <div class="week-legend">💪 Muscu fixe &nbsp;·&nbsp; 🏃 Cardio au choix Sam ou Dim</div>
+
+  <!-- KPIs -->
+  <div class="section-title">KPIs — semaine 1</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-lbl">Séances</div>
+      <div class="kpi-val" style="color:var(--purple)" id="kpi-seances">0 <span class="unit">/ 3</span></div>
+      <div class="kpi-sub">Objectif semaine</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Cardio</div>
+      <div class="kpi-val" style="color:var(--green)" id="kpi-cardio">0 <span class="unit">km</span></div>
+      <div class="kpi-sub">Objectif : 4 km</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Allure course</div>
+      <div class="kpi-val" style="color:var(--blue)" id="kpi-allure">— <span class="unit">'/km</span></div>
+      <div class="kpi-sub">Cible : 4'30"</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">Régularité</div>
+      <div class="kpi-val" style="color:var(--text3)" id="kpi-reg">— <span class="unit">%</span></div>
+      <div class="kpi-sub">Dès S2</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-lbl">RPE moyen</div>
+      <div class="kpi-val" style="color:var(--text3)" id="kpi-rpe">— <span class="unit">/10</span></div>
+      <div class="kpi-sub">Après débrief</div>
+    </div>
+  </div>
+
+  <!-- PILIERS -->
+  <div class="section-title">Progression par pilier</div>
+  <div class="piliers">
+    <div class="pilier-card">
+      <div class="pilier-header">
+        <span class="pilier-name">Force & musculature</span>
+        <span class="pilier-pct" style="color:var(--purple)" id="pct-force">0 %</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-force" style="background:var(--purple)"></div></div>
+    </div>
+    <div class="pilier-card">
+      <div class="pilier-header">
+        <span class="pilier-name">Endurance cardio</span>
+        <span class="pilier-pct" style="color:var(--green)" id="pct-cardio">0 %</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-cardio" style="background:var(--green)"></div></div>
+    </div>
+    <div class="pilier-card">
+      <div class="pilier-header">
+        <span class="pilier-name">10 km / 45'</span>
+        <span class="pilier-pct" style="color:var(--blue)" id="pct-10k">0 %</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-10k" style="background:var(--blue)"></div></div>
+    </div>
+    <div class="pilier-card">
+      <div class="pilier-header">
+        <span class="pilier-name">Composition</span>
+        <span class="pilier-pct" style="color:var(--amber)" id="pct-compo">0 %</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-compo" style="background:var(--amber)"></div></div>
+    </div>
+    <div class="pilier-card full">
+      <div class="pilier-header">
+        <span class="pilier-name">Mobilité & récupération</span>
+        <span class="pilier-pct" style="color:var(--rose)" id="pct-mob">0 %</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="bar-mob" style="background:var(--rose)"></div></div>
+    </div>
+  </div>
+
+  <!-- TEST RÉFÉRENCE -->
+  <div class="section-title">Test de référence — 30/05</div>
+  <div class="ref-grid">
+    <div class="ref-card good">
+      <div class="ref-exo">Pompes</div>
+      <div class="ref-score">25 <span class="u">reps</span></div>
+      <div class="ref-lvl">Intermédiaire</div>
+    </div>
+    <div class="ref-card great">
+      <div class="ref-exo">Tractions</div>
+      <div class="ref-score">10 <span class="u">reps</span></div>
+      <div class="ref-lvl">Très bon</div>
+    </div>
+    <div class="ref-card great">
+      <div class="ref-exo">Squats</div>
+      <div class="ref-score">40 <span class="u">/min</span></div>
+      <div class="ref-lvl">Excellent</div>
+    </div>
+    <div class="ref-card good">
+      <div class="ref-exo">Planche</div>
+      <div class="ref-score">1'30"</div>
+      <div class="ref-lvl">Intermédiaire</div>
+    </div>
+    <div class="ref-card good">
+      <div class="ref-exo">Fentes</div>
+      <div class="ref-score">30 <span class="u">/min</span></div>
+      <div class="ref-lvl">Intermédiaire</div>
+    </div>
+    <div class="ref-card good">
+      <div class="ref-exo">Gainage lat.</div>
+      <div class="ref-score">1'00"</div>
+      <div class="ref-lvl">Intermédiaire</div>
+    </div>
+  </div>
+
+  <div class="dash-footer">Débriefer chaque séance sur Claude · Dashboard mis à jour en temps réel</div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 2 — PROGRAMME
+══════════════════════════════════════ -->
+<div class="page" id="page-programme">
+  <div class="page-header">
+    <div>
+      <h1>Programme S1</h1>
+      <div class="meta">Lun 02/06 · Jeu 05/06 · Week-end 07–08/06</div>
+    </div>
+    <span class="pill pill-purple">Phase 1</span>
+  </div>
+
+  <!-- LUNDI -->
+  <div class="plan-card">
+    <div class="plan-head">
+      <div class="plan-title-row">
+        <span class="plan-day-lbl">Lun 02/06</span>
+        <span class="plan-name">Full body A</span>
+        <span class="pill pill-purple">50 min</span>
+      </div>
+      <div class="exo-list">
+        <div class="exo-row"><span class="exo-sets">warm-up</span><span class="exo-name">Rotations + squats lents + cercles bras</span><span class="exo-note">5 min</span></div>
+        <div class="exo-row"><span class="exo-sets">4 × 12</span><span class="exo-name">Pompes sur appuis surélevés</span><span class="exo-note">prise large</span></div>
+        <div class="exo-row"><span class="exo-sets">4 × 6</span><span class="exo-name">Tractions prise large</span><span class="exo-note">repos 90s</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 15</span><span class="exo-name">Squats sautés</span><span class="exo-note">explosif</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 12</span><span class="exo-name">Hip thrust lesté</span><span class="exo-note">5kg bassin</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 45s</span><span class="exo-name">Planche avant</span><span class="exo-note">abdos serrés</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 30s</span><span class="exo-name">Gainage latéral</span><span class="exo-note">chaque côté</span></div>
+        <div class="exo-row"><span class="exo-sets">cool-down</span><span class="exo-name">Étirements ischio, pecto, dorsaux</span><span class="exo-note">5 min</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JEUDI -->
+  <div class="plan-card">
+    <div class="plan-head">
+      <div class="plan-title-row">
+        <span class="plan-day-lbl">Jeu 05/06</span>
+        <span class="plan-name">Full body B</span>
+        <span class="pill pill-purple">50 min</span>
+      </div>
+      <div class="exo-list">
+        <div class="exo-row"><span class="exo-sets">warm-up</span><span class="exo-name">Jumping jacks + leg swings + bras</span><span class="exo-note">5 min</span></div>
+        <div class="exo-row"><span class="exo-sets">4 × 10</span><span class="exo-name">Pompes prise serrée</span><span class="exo-note">triceps</span></div>
+        <div class="exo-row"><span class="exo-sets">4 × 6</span><span class="exo-name">Tractions prise supination</span><span class="exo-note">biceps</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 12</span><span class="exo-name">Fentes marchées lestées</span><span class="exo-note">5kg</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 12</span><span class="exo-name">Rowing haltères</span><span class="exo-note">buste penché, 5kg</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 15</span><span class="exo-name">Élévations latérales</span><span class="exo-note">5kg</span></div>
+        <div class="exo-row"><span class="exo-sets">3 × 20</span><span class="exo-name">Good morning</span><span class="exo-note">dos droit, 5kg</span></div>
+        <div class="exo-row"><span class="exo-sets">cool-down</span><span class="exo-name">Étirements quad, dorsaux, épaules</span><span class="exo-note">5 min</span></div>
+      </div>
+    </div>
+    <div class="plan-note">Si la dernière rep est confortable → note-le dans le débrief, on monte en S2.</div>
+  </div>
+
+  <!-- WEEK-END CARDIO -->
+  <div class="plan-card">
+    <div class="plan-head">
+      <div class="plan-title-row">
+        <span class="plan-day-lbl">Sam 07/06 ou Dim 08/06</span>
+        <span class="plan-name">Cardio — Fondations</span>
+        <span class="pill pill-green">35–40 min</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:0.6rem;">Sentir ton allure naturelle. Pas de chrono imposé — courir confortablement et noter le temps au km. Ce chiffre calibre toute la progression vers les 4'30"/km.</div>
+      <div class="exo-list">
+        <div class="exo-row"><span class="exo-sets">5 min</span><span class="exo-name">Marche active d'échauffement</span><span class="exo-note">montée progressive</span></div>
+        <div class="exo-row"><span class="exo-sets">20–25 min</span><span class="exo-name">Footing allure libre confortable</span><span class="exo-note">~4 km · noter l'allure</span></div>
+        <div class="exo-row"><span class="exo-sets">5 min</span><span class="exo-name">Marche de récupération</span><span class="exo-note">retour au calme</span></div>
+      </div>
+    </div>
+    <div class="cardio-split">
+      <div class="cardio-col run">
+        <div class="cardio-col-lbl">🏃 Footing</div>
+        <div class="cardio-col-val">4 km · allure naturelle · noter temps</div>
+      </div>
+      <div class="cardio-col walk">
+        <div class="cardio-col-lbl">🚶 Marche (alt.)</div>
+        <div class="cardio-col-val">6 km · pas soutenu · ~55 min</div>
+      </div>
+    </div>
+    <div class="plan-note">🎯 Vers 10 km/45' — Phase 1 : volume et sensations · Allure cible S1 : confort total</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     PAGE 3 — DÉBRIEF
+══════════════════════════════════════ -->
+<div class="page" id="page-debrief">
+  <div class="page-header">
+    <div>
+      <h1>Mes débriefs</h1>
+      <div class="meta">Remplis après chaque séance · Transmets à Claude</div>
+    </div>
+    <span class="pill pill-amber">S1</span>
+  </div>
+
+  <!-- LUNDI -->
+  <div class="debrief-session" id="db-lun">
+    <div class="debrief-head" onclick="toggleDebrief('lun')">
+      <div class="debrief-left">
+        <div class="status-dot" id="dot-lun"></div>
+        <div>
+          <div class="debrief-date">LUN 02/06</div>
+          <div class="debrief-name">Full body A</div>
+        </div>
+      </div>
+      <span id="arrow-lun" style="color:var(--text3);font-size:20px;">›</span>
+    </div>
+    <div id="body-lun" style="display:none;">
+      <div class="debrief-body">
+        <div class="debrief-grid">
+          <div class="debrief-field">
+            <label>Séance complétée</label>
+            <select id="done-lun"><option value="">—</option><option>Oui, complète</option><option>Partielle</option><option>Non réalisée</option></select>
+          </div>
+          <div class="debrief-field">
+            <label>Durée réelle (min)</label>
+            <input type="number" inputmode="numeric" placeholder="ex: 48" id="dur-lun">
+          </div>
+          <div class="debrief-field full">
+            <label>Charge perçue (RPE)</label>
+            <div class="rpe-row" id="rpe-lun">
+              <button class="rpe-btn" onclick="setRPE('lun',1)">1</button><button class="rpe-btn" onclick="setRPE('lun',2)">2</button><button class="rpe-btn" onclick="setRPE('lun',3)">3</button><button class="rpe-btn" onclick="setRPE('lun',4)">4</button><button class="rpe-btn" onclick="setRPE('lun',5)">5</button><button class="rpe-btn" onclick="setRPE('lun',6)">6</button><button class="rpe-btn" onclick="setRPE('lun',7)">7</button><button class="rpe-btn" onclick="setRPE('lun',8)">8</button><button class="rpe-btn" onclick="setRPE('lun',9)">9</button><button class="rpe-btn" onclick="setRPE('lun',10)">10</button>
+            </div>
+          </div>
+          <div class="debrief-field full"><label>Ce qui était facile</label><textarea rows="2" placeholder="ex: Squats sautés, gainage…" id="easy-lun"></textarea></div>
+          <div class="debrief-field full"><label>Ce qui était difficile</label><textarea rows="2" placeholder="ex: 4e série tractions…" id="hard-lun"></textarea></div>
+          <div class="debrief-field full"><label>Notes libres</label><textarea rows="2" placeholder="Sensations, douleurs, questions…" id="notes-lun"></textarea></div>
+        </div>
+        <button class="save-btn" onclick="saveDebrief('lun')">Enregistrer ce débrief</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JEUDI -->
+  <div class="debrief-session" id="db-jeu">
+    <div class="debrief-head" onclick="toggleDebrief('jeu')">
+      <div class="debrief-left">
+        <div class="status-dot" id="dot-jeu"></div>
+        <div>
+          <div class="debrief-date">JEU 05/06</div>
+          <div class="debrief-name">Full body B</div>
+        </div>
+      </div>
+      <span id="arrow-jeu" style="color:var(--text3);font-size:20px;">›</span>
+    </div>
+    <div id="body-jeu" style="display:none;">
+      <div class="debrief-body">
+        <div class="debrief-grid">
+          <div class="debrief-field">
+            <label>Séance complétée</label>
+            <select id="done-jeu"><option value="">—</option><option>Oui, complète</option><option>Partielle</option><option>Non réalisée</option></select>
+          </div>
+          <div class="debrief-field">
+            <label>Durée réelle (min)</label>
+            <input type="number" inputmode="numeric" placeholder="ex: 52" id="dur-jeu">
+          </div>
+          <div class="debrief-field full">
+            <label>Charge perçue (RPE)</label>
+            <div class="rpe-row" id="rpe-jeu">
+              <button class="rpe-btn" onclick="setRPE('jeu',1)">1</button><button class="rpe-btn" onclick="setRPE('jeu',2)">2</button><button class="rpe-btn" onclick="setRPE('jeu',3)">3</button><button class="rpe-btn" onclick="setRPE('jeu',4)">4</button><button class="rpe-btn" onclick="setRPE('jeu',5)">5</button><button class="rpe-btn" onclick="setRPE('jeu',6)">6</button><button class="rpe-btn" onclick="setRPE('jeu',7)">7</button><button class="rpe-btn" onclick="setRPE('jeu',8)">8</button><button class="rpe-btn" onclick="setRPE('jeu',9)">9</button><button class="rpe-btn" onclick="setRPE('jeu',10)">10</button>
+            </div>
+          </div>
+          <div class="debrief-field full"><label>Ce qui était facile</label><textarea rows="2" placeholder="ex: Rowing, fentes…" id="easy-jeu"></textarea></div>
+          <div class="debrief-field full"><label>Ce qui était difficile</label><textarea rows="2" placeholder="ex: Élévations latérales…" id="hard-jeu"></textarea></div>
+          <div class="debrief-field full"><label>Notes libres</label><textarea rows="2" placeholder="Sensations, douleurs, questions…" id="notes-jeu"></textarea></div>
+        </div>
+        <button class="save-btn" onclick="saveDebrief('jeu')">Enregistrer ce débrief</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK-END -->
+  <div class="debrief-session" id="db-we">
+    <div class="debrief-head" onclick="toggleDebrief('we')">
+      <div class="debrief-left">
+        <div class="status-dot" id="dot-we"></div>
+        <div>
+          <div class="debrief-date">SAM 07/06 ou DIM 08/06</div>
+          <div class="debrief-name">Cardio — Fondations 10 km</div>
+        </div>
+      </div>
+      <span id="arrow-we" style="color:var(--text3);font-size:20px;">›</span>
+    </div>
+    <div id="body-we" style="display:none;">
+      <div class="debrief-body">
+        <div class="debrief-grid">
+          <div class="debrief-field">
+            <label>Jour effectué</label>
+            <select id="done-we"><option value="">—</option><option>Samedi</option><option>Dimanche</option><option>Non réalisé</option></select>
+          </div>
+          <div class="debrief-field">
+            <label>Type d'activité</label>
+            <select id="type-we"><option value="">—</option><option>Footing</option><option>Marche</option><option>Mix marche / footing</option></select>
+          </div>
+          <div class="debrief-field">
+            <label>Distance (km)</label>
+            <input type="number" inputmode="decimal" step="0.1" placeholder="ex: 4.2" id="dist-we">
+          </div>
+          <div class="debrief-field">
+            <label>Durée totale (min)</label>
+            <input type="number" inputmode="numeric" placeholder="ex: 24" id="dur-we">
+          </div>
+          <div class="debrief-field full">
+            <label>Allure moyenne (min/km)</label>
+            <input type="text" inputmode="text" placeholder="ex: 5'20&quot;" id="pace-we">
+          </div>
+          <div class="debrief-field full">
+            <label>Charge perçue (RPE)</label>
+            <div class="rpe-row" id="rpe-we">
+              <button class="rpe-btn" onclick="setRPE('we',1)">1</button><button class="rpe-btn" onclick="setRPE('we',2)">2</button><button class="rpe-btn" onclick="setRPE('we',3)">3</button><button class="rpe-btn" onclick="setRPE('we',4)">4</button><button class="rpe-btn" onclick="setRPE('we',5)">5</button><button class="rpe-btn" onclick="setRPE('we',6)">6</button><button class="rpe-btn" onclick="setRPE('we',7)">7</button><button class="rpe-btn" onclick="setRPE('we',8)">8</button><button class="rpe-btn" onclick="setRPE('we',9)">9</button><button class="rpe-btn" onclick="setRPE('we',10)">10</button>
+            </div>
+          </div>
+          <div class="debrief-field full"><label>Notes libres</label><textarea rows="2" placeholder="Souffle, jambes, sensations, parcours…" id="notes-we"></textarea></div>
+        </div>
+        <button class="save-btn" onclick="saveDebrief('we')">Enregistrer ce débrief</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BILAN SEMAINE -->
+  <div class="debrief-session" id="db-bilan">
+    <div class="debrief-head" onclick="toggleDebrief('bilan')">
+      <div class="debrief-left">
+        <div class="status-dot" id="dot-bilan"></div>
+        <div>
+          <div class="debrief-date">FIN DE SEMAINE</div>
+          <div class="debrief-name">Bilan S1</div>
+        </div>
+      </div>
+      <span id="arrow-bilan" style="color:var(--text3);font-size:20px;">›</span>
+    </div>
+    <div id="body-bilan" style="display:none;">
+      <div class="debrief-body">
+        <div class="debrief-grid">
+          <div class="debrief-field full">
+            <label>Énergie générale (1–10)</label>
+            <div class="rpe-row" id="rpe-bilan">
+              <button class="rpe-btn" onclick="setRPE('bilan',1)">1</button><button class="rpe-btn" onclick="setRPE('bilan',2)">2</button><button class="rpe-btn" onclick="setRPE('bilan',3)">3</button><button class="rpe-btn" onclick="setRPE('bilan',4)">4</button><button class="rpe-btn" onclick="setRPE('bilan',5)">5</button><button class="rpe-btn" onclick="setRPE('bilan',6)">6</button><button class="rpe-btn" onclick="setRPE('bilan',7)">7</button><button class="rpe-btn" onclick="setRPE('bilan',8)">8</button><button class="rpe-btn" onclick="setRPE('bilan',9)">9</button><button class="rpe-btn" onclick="setRPE('bilan',10)">10</button>
+            </div>
+          </div>
+          <div class="debrief-field full"><label>Ressenti global</label><textarea rows="3" placeholder="Motivation, fatigue, courbatures, progression…" id="notes-bilan"></textarea></div>
+          <div class="debrief-field full"><label>Contraintes semaine prochaine</label><textarea rows="2" placeholder="Voyages, horaires, blessures légères…" id="contraintes-bilan"></textarea></div>
+        </div>
+        <button class="save-btn" onclick="saveDebrief('bilan')">Enregistrer le bilan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-footer">Après chaque enregistrement, transmets les infos à Claude pour mise à jour du programme</div>
+</div>
+
+
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Débrief enregistré !</div>
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <button class="tab-btn active" id="tab-dashboard" onclick="showPage('dashboard')">
+    <span class="tab-icon">📊</span>
+    <span>Dashboard</span>
+  </button>
+  <button class="tab-btn" id="tab-programme" onclick="showPage('programme')">
+    <span class="tab-icon">📅</span>
+    <span>Programme</span>
+  </button>
+  <button class="tab-btn" id="tab-debrief" onclick="showPage('debrief')">
+    <span class="tab-icon">📋</span>
+    <span>Débrief</span>
+  </button>
+</nav>
+
+<script>
+  /* ─── NAVIGATION ─── */
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  /* ─── DÉBRIEF ACCORDION ─── */
+  function toggleDebrief(id) {
+    const body  = document.getElementById('body-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    const open  = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    arrow.textContent  = open ? '›' : '‹';
+  }
+
+  /* ─── RPE ─── */
+  const rpeValues = {};
+  function setRPE(session, val) {
+    rpeValues[session] = val;
+    document.querySelectorAll('#rpe-' + session + ' .rpe-btn')
+      .forEach((b, i) => b.classList.toggle('active', i + 1 === val));
+    saveToStorage();
+  }
+
+  /* ─── SAVE DÉBRIEF avec localStorage ─── */
+  function saveDebrief(id) {
+    const dot  = document.getElementById('dot-' + id);
+    const done = document.getElementById('done-' + id);
+    const val  = done ? done.value : 'Oui, complète';
+    if (val === 'Non réalisé' || val === 'Non réalisée') {
+      dot.className = 'status-dot partial';
+    } else if (val === 'Partielle') {
+      dot.className = 'status-dot partial';
+    } else if (val) {
+      dot.className = 'status-dot done';
+    }
+    saveToStorage();
+    updateKPIs();
+    showToast();
+  }
+
+  /* ─── TOAST ─── */
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  /* ─── LOCALSTORAGE ─── */
+  function saveToStorage() {
+    const data = {};
+    ['lun','jeu','we','bilan'].forEach(id => {
+      data[id] = {
+        done:     (document.getElementById('done-' + id) || {}).value || '',
+        dur:      (document.getElementById('dur-' + id)  || {}).value || '',
+        type:     (document.getElementById('type-' + id) || {}).value || '',
+        dist:     (document.getElementById('dist-' + id) || {}).value || '',
+        pace:     (document.getElementById('pace-' + id) || {}).value || '',
+        easy:     (document.getElementById('easy-' + id) || {}).value || '',
+        hard:     (document.getElementById('hard-' + id) || {}).value || '',
+        notes:    (document.getElementById('notes-' + id)|| {}).value || '',
+        contraintes: (document.getElementById('contraintes-' + id)|| {}).value || '',
+        rpe:      rpeValues[id] || null,
+        dotClass: (document.getElementById('dot-' + id) || {}).className || 'status-dot',
+      };
+    });
+    try { localStorage.setItem('coaching-s1', JSON.stringify(data)); } catch(e) {}
+  }
+
+  function loadFromStorage() {
+    try {
+      const raw = localStorage.getItem('coaching-s1');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      ['lun','jeu','we','bilan'].forEach(id => {
+        const d = data[id]; if (!d) return;
+        const set = (sid, val) => { const el = document.getElementById(sid); if (el && val) el.value = val; };
+        set('done-' + id, d.done);
+        set('dur-'  + id, d.dur);
+        set('type-' + id, d.type);
+        set('dist-' + id, d.dist);
+        set('pace-' + id, d.pace);
+        set('easy-' + id, d.easy);
+        set('hard-' + id, d.hard);
+        set('notes-'+ id, d.notes);
+        set('contraintes-'+id, d.contraintes);
+        if (d.rpe) { rpeValues[id] = d.rpe; setRPE(id, d.rpe); }
+        const dot = document.getElementById('dot-' + id);
+        if (dot && d.dotClass) dot.className = d.dotClass;
+      });
+    } catch(e) {}
+  }
+
+  /* ─── KPIs auto-calculés ─── */
+  function updateKPIs() {
+    // Séances
+    let done = 0;
+    ['lun','jeu','we'].forEach(id => {
+      const dot = document.getElementById('dot-' + id);
+      if (dot && dot.classList.contains('done')) done++;
+    });
+    const kpiS = document.getElementById('kpi-seances');
+    if (kpiS) kpiS.innerHTML = done + ' <span class="unit">/ 3</span>';
+
+    // Cardio km
+    const dist = parseFloat((document.getElementById('dist-we') || {}).value) || 0;
+    const kpiC = document.getElementById('kpi-cardio');
+    if (kpiC) kpiC.innerHTML = (dist || '0') + ' <span class="unit">km</span>';
+
+    // Allure
+    const pace = (document.getElementById('pace-we') || {}).value || '';
+    const kpiA = document.getElementById('kpi-allure');
+    if (kpiA) kpiA.innerHTML = (pace || '—') + ' <span class="unit">'/km</span>';
+
+    // RPE moyen
+    const rpes = ['lun','jeu','we'].map(id => rpeValues[id]).filter(Boolean);
+    const avgRpe = rpes.length ? (rpes.reduce((a,b) => a+b, 0) / rpes.length).toFixed(1) : '—';
+    const kpiR = document.getElementById('kpi-rpe');
+    if (kpiR) kpiR.innerHTML = avgRpe + ' <span class="unit">/10</span>';
+
+    // Régularité
+    const kpiReg = document.getElementById('kpi-reg');
+    if (kpiReg && done > 0) kpiReg.innerHTML = Math.round(done/3*100) + ' <span class="unit">%</span>';
+  }
+
+  /* ─── PWA SERVICE WORKER ─── */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  /* ─── INIT ─── */
+  window.addEventListener('DOMContentLoaded', () => {
+    loadFromStorage();
+    updateKPIs();
+    // Animate bars on load
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(b => {
+        const w = b.style.width; b.style.width = '0%';
+        setTimeout(() => b.style.width = w, 100);
+      });
+    }, 200);
+  });
+</script>
+</body>
+</html>
